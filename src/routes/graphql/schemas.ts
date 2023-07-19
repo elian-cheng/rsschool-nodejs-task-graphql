@@ -8,6 +8,7 @@ import {
 } from 'graphql';
 import { UUIDType } from './types/uuid.js';
 import { userType, createUserInputType, changeUserInputType } from './types/user.js';
+import { memberIdType, memberType } from './types/member.js';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -39,6 +40,15 @@ const query = new GraphQLObjectType({
     },
     users: {
       type: new GraphQLList(userType),
+    },
+    memberType: {
+      type: memberType,
+      args: {
+        id: { type: new GraphQLNonNull(memberIdType) },
+      },
+    },
+    memberTypes: {
+      type: new GraphQLList(memberType),
     },
   },
 });

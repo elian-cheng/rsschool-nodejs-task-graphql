@@ -14,7 +14,7 @@ export interface IUserInput {
   balance: number;
 }
 
-export interface User extends IID, IUserInput {}
+export interface IUser extends IID, IUserInput {}
 
 export const userType = new GraphQLObjectType({
   name: 'User',
