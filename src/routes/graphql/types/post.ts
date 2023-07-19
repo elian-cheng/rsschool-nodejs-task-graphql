@@ -5,15 +5,17 @@ import {
   GraphQLString,
 } from 'graphql';
 import { UUIDType } from './uuid.js';
+import { IContext, IID, DataRecord } from './common.js';
 import { userType } from './user.js';
-import { DataRecord, IContext, IID } from './common.js';
 import { getUser } from '../resolvers/user.js';
+
 export interface IPostInput {
   title: string;
   content: string;
   authorId: string;
 }
-export interface Post extends IID, IPostInput {}
+
+export interface IPost extends IID, IPostInput {}
 
 export const postType = new GraphQLObjectType({
   name: 'Post',
@@ -23,7 +25,7 @@ export const postType = new GraphQLObjectType({
     content: { type: new GraphQLNonNull(GraphQLString) },
     author: {
       type: userType,
-      resolve: async (source: Post, _: DataRecord, context: IContext) =>
+      resolve: async (source: IPost, _: DataRecord, context: IContext) =>
         await getUser({ id: source.authorId }, context),
     },
   }),

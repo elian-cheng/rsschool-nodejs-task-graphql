@@ -1,25 +1,13 @@
-import { PrismaClient } from '@prisma/client';
-import { IContext, IID } from '../types/common.js';
+import { IContext, IID, DataRecord } from '../types/common.js';
 import { IPostInput } from '../types/post.js';
 
-const prisma = new PrismaClient();
-
-const getPost = async (args: IID) => {
-  const post = await prisma.post.findUnique({
-    where: {
-      id: args.id,
-    },
-  });
+const getPost = async ({ id }: IID, { prisma }: IContext) => {
+  const post = await prisma.post.findUnique({ where: { id } });
   return post;
 };
 
-const getPosts = async () => {
+const getPosts = async (_: DataRecord, { prisma }: IContext) => {
   const posts = await prisma.post.findMany();
-  return posts;
-};
-
-export const getPostsByUserId = async (authorId: string) => {
-  const posts = await prisma.post.findMany({ where: { authorId } });
   return posts;
 };
 
@@ -50,6 +38,11 @@ const deletePost = async ({ id }: IID, { prisma }: IContext) => {
   } catch {
     return null;
   }
+};
+
+export const getPostsByUserId = async (authorId: string, { prisma }: IContext) => {
+  const posts = await prisma.post.findMany({ where: { authorId } });
+  return posts;
 };
 
 export default {

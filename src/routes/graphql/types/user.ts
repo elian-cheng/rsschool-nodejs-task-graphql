@@ -9,8 +9,8 @@ import {
 import { UUIDType } from './uuid.js';
 import { IContext, IID, DataRecord } from './common.js';
 import { profileType } from './profile.js';
-import { postType } from './post.js';
 import { getProfileByUserId } from '../resolvers/profile.js';
+import { postType } from './post.js';
 import { getPostsByUserId } from '../resolvers/post.js';
 import { getUserFollowers, getUserSubscriptions } from '../resolvers/user.js';
 
@@ -28,21 +28,24 @@ export const userType = new GraphQLObjectType({
     name: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
     profile: {
-      type: profileType,
+      type: profileType as GraphQLObjectType,
       resolve: async (source: IUser, _: DataRecord, context: IContext) =>
         await getProfileByUserId(source.id, context),
     },
     posts: {
       type: new GraphQLList(postType),
-      resolve: async (source: IUser) => await getPostsByUserId(source.id),
+      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
+        await getPostsByUserId(source.id, context),
     },
     userSubscribedTo: {
       type: new GraphQLList(userType),
-      resolve: async (source: IUser) => await getUserSubscriptions(source.id),
+      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
+        await getUserSubscriptions(source.id, context),
     },
     subscribedToUser: {
       type: new GraphQLList(userType),
-      resolve: async (source: IUser) => await getUserFollowers(source.id),
+      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
+        await getUserFollowers(source.id, context),
     },
   }),
 });

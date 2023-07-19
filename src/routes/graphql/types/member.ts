@@ -1,23 +1,20 @@
 import {
   GraphQLEnumType,
-  GraphQLError,
   GraphQLFloat,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLScalarType,
-  Kind,
 } from 'graphql';
 import { MemberTypeId } from '../../member-types/schemas.js';
-import { getProfilesByMemberTypeId } from '../resolvers/profile.js';
-import { DataRecord, IContext } from './common.js';
 import { profileType } from './profile.js';
+import { getProfilesByMemberTypeId } from '../resolvers/profile.js';
+import { IContext, DataRecord } from './common.js';
 
 interface IMemberType {
-  id: MemberTypeId,
-  discount: number,
-  postsLimitPerMonth: number
+  id: MemberTypeId;
+  discount: number;
+  postsLimitPerMonth: number;
 }
 
 export const memberTypeIdEnum = new GraphQLEnumType({
@@ -40,7 +37,8 @@ export const memberType = new GraphQLObjectType({
     postsLimitPerMonth: { type: new GraphQLNonNull(GraphQLInt) },
     profiles: {
       type: new GraphQLList(profileType),
-      resolve: async (source: IMemberType, _: DataRecord, context: IContext) => await getProfilesByMemberTypeId(source.id, context),
+      resolve: async (source: IMemberType, _: DataRecord, context: IContext) =>
+        await getProfilesByMemberTypeId(source.id, context),
     },
   }),
 });

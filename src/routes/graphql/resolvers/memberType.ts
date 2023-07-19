@@ -1,18 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-import { IID } from '../types/common.js';
+import { IContext, IID, DataRecord } from '../types/common.js';
 
-const prisma = new PrismaClient();
-
-export const getMemberType = async (args: IID) => {
-  const memberType = await prisma.memberType.findUnique({
-    where: {
-      id: args.id,
-    },
-  });
+export const getMemberType = async ({ id }: IID, { prisma }: IContext) => {
+  const memberType = await prisma.memberType.findUnique({ where: { id } });
   return memberType;
 };
 
-const getMemberTypes = async () => {
+const getMemberTypes = async (_: DataRecord, { prisma }: IContext) => {
   const memberTypes = await prisma.memberType.findMany();
   return memberTypes;
 };

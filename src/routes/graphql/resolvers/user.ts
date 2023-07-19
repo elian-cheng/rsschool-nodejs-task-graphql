@@ -1,7 +1,5 @@
 import { IUserInput } from '../types/user.js';
 import { IContext, IID, DataRecord, ISubscription } from '../types/common.js';
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
 
 export const getUser = async ({ id }: IID, { prisma }: IContext) => {
   const user = await prisma.user.findUnique({ where: { id } });
@@ -42,14 +40,45 @@ const deleteUser = async ({ id }: IID, { prisma }: IContext) => {
   }
 };
 
-export const getUserSubscriptions = async (subscriberId: string) => {
+const subscribeTo = async (
+  { userId: id, authorId }: ISubscription,
+  { prisma }: IContext,
+) => {
+  try {
+    const user = prisma.user.update({
+      where: { id },
+      data: { userSubscribedTo: { create: { authorId } } },
+    });
+    return user;
+  } catch {
+    return null;
+  }
+};
+
+const unsubscribeFrom = async (
+  { userId: subscriberId, authorId }: ISubscription,
+  { prisma }: IContext,
+) => {
+  try {
+    await prisma.subscribersOnAuthors.delete({
+      where: { subscriberId_authorId: { subscriberId, authorId } },
+    });
+  } catch {
+    return null;
+  }
+};
+
+export const getUserSubscriptions = async (
+  subscriberId: string,
+  { prisma }: IContext,
+) => {
   const subscriptions = await prisma.user.findMany({
     where: { subscribedToUser: { some: { subscriberId } } },
   });
   return subscriptions;
 };
 
-export const getUserFollowers = async (authorId: string) => {
+export const getUserFollowers = async (authorId: string, { prisma }: IContext) => {
   const followers = await prisma.user.findMany({
     where: { userSubscribedTo: { some: { authorId } } },
   });
@@ -62,4 +91,6 @@ export default {
   createUser,
   changeUser,
   deleteUser,
+  subscribeTo,
+  unsubscribeFrom,
 };

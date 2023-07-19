@@ -6,11 +6,11 @@ import {
   GraphQLObjectType,
 } from 'graphql';
 import { UUIDType } from './uuid.js';
-import { userType } from './user.js';
 import { memberType, memberTypeIdEnum } from './member.js';
+import { IContext, IID, DataRecord } from './common.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
-import { DataRecord, IContext, IID } from './common.js';
 import { getMemberType } from '../resolvers/memberType.js';
+import { userType } from './user.js';
 import { getUser } from '../resolvers/user.js';
 
 export interface IProfileInput {
@@ -20,7 +20,7 @@ export interface IProfileInput {
   userId: string;
 }
 
-export interface Profile extends IID, IProfileInput {}
+export interface IProfile extends IID, IProfileInput {}
 
 export const profileType = new GraphQLObjectType({
   name: 'Profile',
@@ -30,12 +30,12 @@ export const profileType = new GraphQLObjectType({
     yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
     memberType: {
       type: new GraphQLNonNull(memberType),
-      resolve: async (source: Profile) =>
-        await getMemberType({ id: source.memberTypeId }),
+      resolve: async (source: IProfile, _: DataRecord, context: IContext) =>
+        await getMemberType({ id: source.memberTypeId }, context),
     },
     user: {
       type: userType as GraphQLObjectType,
-      resolve: async (source: Profile, _: DataRecord, context: IContext) =>
+      resolve: async (source: IProfile, _: DataRecord, context: IContext) =>
         await getUser({ id: source.userId }, context),
     },
   }),
