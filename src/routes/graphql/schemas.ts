@@ -1,4 +1,13 @@
 import { Type } from '@fastify/type-provider-typebox';
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
+import { UUIDType } from './types/uuid.js';
+import { userType, createUserInputType, changeUserInputType } from './types/user.js';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -19,3 +28,44 @@ export const createGqlResponseSchema = {
   ),
 };
 
+const query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    user: {
+      type: userType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) },
+      },
+    },
+    users: {
+      type: new GraphQLList(userType),
+    },
+  },
+});
+
+const mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    createUser: {
+      type: userType,
+      args: {
+        dto: { type: createUserInputType },
+      },
+    },
+    changeUser: {
+      type: userType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) },
+        dto: { type: changeUserInputType },
+      },
+    },
+    deleteUser: {
+      type: UUIDType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDType) },
+      },
+    },
+  },
+});
+
+export const schema = new GraphQLSchema({ query, mutation });
