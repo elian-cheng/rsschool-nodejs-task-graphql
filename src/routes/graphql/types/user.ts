@@ -8,6 +8,11 @@ import {
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { IContext, IID, DataRecord } from './common.js';
+import { profileType } from './profile.js';
+import { postType } from './post.js';
+import { getProfileByUserId } from '../resolvers/profile.js';
+import { getPostsByUserId } from '../resolvers/post.js';
+import { getUserFollowers, getUserSubscriptions } from '../resolvers/user.js';
 
 export interface IUserInput {
   name: string;
@@ -22,6 +27,23 @@ export const userType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(UUIDType) },
     name: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
+    profile: {
+      type: profileType,
+      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
+        await getProfileByUserId(source.id, context),
+    },
+    posts: {
+      type: new GraphQLList(postType),
+      resolve: async (source: IUser) => await getPostsByUserId(source.id),
+    },
+    userSubscribedTo: {
+      type: new GraphQLList(userType),
+      resolve: async (source: IUser) => await getUserSubscriptions(source.id),
+    },
+    subscribedToUser: {
+      type: new GraphQLList(userType),
+      resolve: async (source: IUser) => await getUserFollowers(source.id),
+    },
   }),
 });
 

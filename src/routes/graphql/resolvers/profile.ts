@@ -1,23 +1,72 @@
-import { PrismaClient } from '@prisma/client';
-import { IID } from '../types/common.js';
+import { IContext, IID, DataRecord } from '../types/common.js';
+import { IProfileInput } from '../types/profile.js';
+import { MemberTypeId } from '../../member-types/schemas.js';
 
-const prisma = new PrismaClient();
+const getProfile = async ({ id }: IID, { prisma }: IContext) => {
+  const profile = await prisma.profile.findUnique({ where: { id } });
+  return profile;
+};
 
-const getProfile = async (args: IID) => {
+const getProfiles = async (_: DataRecord, { prisma }: IContext) => {
+  const profiles = await prisma.profile.findMany();
+  return profiles;
+};
+
+const createProfile = async (
+  { dto: data }: { dto: IProfileInput },
+  { prisma }: IContext,
+) => {
+  try {
+    const profile = await prisma.profile.create({ data });
+    return profile;
+  } catch {
+    return null;
+  }
+};
+
+const changeProfile = async (
+  { id, dto: data }: IID & { dto: Partial<IProfileInput> },
+  { prisma }: IContext,
+) => {
+  try {
+    const profile = await prisma.profile.update({
+      where: { id },
+      data,
+    });
+    return profile;
+  } catch {
+    return null;
+  }
+};
+
+const deleteProfile = async ({ id }: IID, { prisma }: IContext) => {
+  try {
+    await prisma.profile.delete({ where: { id } });
+    return id;
+  } catch {
+    return null;
+  }
+};
+
+export const getProfileByUserId = async (userId: string, { prisma }: IContext) => {
   const profile = await prisma.profile.findUnique({
-    where: {
-      id: args.id,
-    },
+    where: { userId },
   });
   return profile;
 };
 
-const getProfiles = async () => {
-  const profiles = await prisma.profile.findMany();
+export const getProfilesByMemberTypeId = async (
+  memberTypeId: MemberTypeId,
+  { prisma }: IContext,
+) => {
+  const profiles = await prisma.profile.findMany({ where: { memberTypeId } });
   return profiles;
 };
 
 export default {
   profile: getProfile,
   profiles: getProfiles,
+  createProfile,
+  changeProfile,
+  deleteProfile,
 };
