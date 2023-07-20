@@ -9,7 +9,6 @@ import {
 import { UUIDType } from './uuid.js';
 import { IContext, IID, DataRecord } from './common.js';
 import { profileType } from './profile.js';
-import { getProfileByUserId } from '../resolvers/profile.js';
 import { postType } from './post.js';
 
 export interface IUserInput {
@@ -27,8 +26,11 @@ export const userType = new GraphQLObjectType({
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
     profile: {
       type: profileType as GraphQLObjectType,
-      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
-        await getProfileByUserId(source.id, context),
+      resolve: async (
+        source: IUser,
+        _: DataRecord,
+        { profileByUserIdLoader }: IContext,
+      ) => profileByUserIdLoader.load(source.id),
     },
     posts: {
       type: new GraphQLList(postType),

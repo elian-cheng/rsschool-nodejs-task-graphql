@@ -8,7 +8,6 @@ import {
 } from 'graphql';
 import { MemberTypeId } from '../../member-types/schemas.js';
 import { profileType } from './profile.js';
-import { getProfilesByMemberTypeId } from '../resolvers/profile.js';
 import { IContext, DataRecord } from './common.js';
 
 interface IMemberType {
@@ -37,8 +36,11 @@ export const memberType = new GraphQLObjectType({
     postsLimitPerMonth: { type: new GraphQLNonNull(GraphQLInt) },
     profiles: {
       type: new GraphQLList(profileType),
-      resolve: async (source: IMemberType, _: DataRecord, context: IContext) =>
-        await getProfilesByMemberTypeId(source.id, context),
+      resolve: async (
+        source: IMemberType,
+        _: DataRecord,
+        { profilesByMemberTypeIdLoader }: IContext,
+      ) => profilesByMemberTypeIdLoader.load(source.id),
     },
   }),
 });
