@@ -11,7 +11,6 @@ import { IContext, IID, DataRecord } from './common.js';
 import { profileType } from './profile.js';
 import { getProfileByUserId } from '../resolvers/profile.js';
 import { postType } from './post.js';
-import { getUserFollowers, getUserSubscriptions } from '../resolvers/user.js';
 
 export interface IUserInput {
   name: string;
@@ -41,13 +40,16 @@ export const userType = new GraphQLObjectType({
     },
     userSubscribedTo: {
       type: new GraphQLList(userType),
-      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
-        await getUserSubscriptions(source.id, context),
+      resolve: async (
+        source: IUser,
+        _: DataRecord,
+        { userSubscriptionsLoader }: IContext,
+      ) => userSubscriptionsLoader.load(source.id),
     },
     subscribedToUser: {
       type: new GraphQLList(userType),
-      resolve: async (source: IUser, _: DataRecord, context: IContext) =>
-        await getUserFollowers(source.id, context),
+      resolve: async (source: IUser, _: DataRecord, { userFollowersLoader }: IContext) =>
+        userFollowersLoader.load(source.id),
     },
   }),
 });
