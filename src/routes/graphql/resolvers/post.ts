@@ -40,11 +40,6 @@ const deletePost = async ({ id }: IID, { prisma }: IContext) => {
   }
 };
 
-export const getPostsByUserId = async (authorId: string, { prisma }: IContext) => {
-  const posts = await prisma.post.findMany({ where: { authorId } });
-  return posts;
-};
-
 export default {
   post: getPost,
   posts: getPosts,
