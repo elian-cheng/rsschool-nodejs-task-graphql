@@ -1,13 +1,36 @@
-import { IUserInput } from '../types/user.js';
-import { IContext, IID, DataRecord, ISubscription } from '../types/common.js';
+import { GraphQLList, GraphQLResolveInfo } from 'graphql';
+import { IUserInput, userType } from '../types/user.js';
+import {
+  ResolveTree,
+  parseResolveInfo,
+  simplifyParsedResolveInfoFragmentWithType,
+} from 'graphql-parse-resolve-info';
+import { IContext, IID, DataRecord, ISubscriptionMutation } from '../types/common.js';
 
-export const getUser = async ({ id }: IID, { prisma }: IContext) => {
-  const user = await prisma.user.findUnique({ where: { id } });
+export const getUser = async ({ id }: IID, { userLoader }: IContext) => {
+  const user = await userLoader.load(id);
   return user;
 };
 
-const getUsers = async (_: DataRecord, { prisma }: IContext) => {
-  const users = await prisma.user.findMany();
+const getUsers = async (
+  _: DataRecord,
+  { prisma, userLoader }: IContext,
+  resolveInfo: GraphQLResolveInfo,
+) => {
+  const parsedResolveInfoFragment = parseResolveInfo(resolveInfo);
+  const { fields }: { fields: { [key in string]: ResolveTree } } =
+    simplifyParsedResolveInfoFragmentWithType(
+      parsedResolveInfoFragment as ResolveTree,
+      new GraphQLList(userType),
+    );
+
+  const users = await prisma.user.findMany({
+    include: {
+      userSubscribedTo: !!fields.userSubscribedTo,
+      subscribedToUser: !!fields.subscribedToUser,
+    },
+  });
+
   return users;
 };
 
@@ -41,7 +64,7 @@ const deleteUser = async ({ id }: IID, { prisma }: IContext) => {
 };
 
 const subscribeTo = async (
-  { userId: id, authorId }: ISubscription,
+  { userId: id, authorId }: ISubscriptionMutation,
   { prisma }: IContext,
 ) => {
   try {
@@ -56,7 +79,7 @@ const subscribeTo = async (
 };
 
 const unsubscribeFrom = async (
-  { userId: subscriberId, authorId }: ISubscription,
+  { userId: subscriberId, authorId }: ISubscriptionMutation,
   { prisma }: IContext,
 ) => {
   try {
