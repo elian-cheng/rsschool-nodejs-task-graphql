@@ -9,9 +9,7 @@ import { UUIDType } from './uuid.js';
 import { memberType, memberTypeIdEnum } from './member.js';
 import { IContext, IID, DataRecord } from './common.js';
 import { MemberTypeId } from '../../member-types/schemas.js';
-import { getMemberType } from '../resolvers/memberType.js';
 import { userType } from './user.js';
-import { getUser } from '../resolvers/user.js';
 
 export interface IProfileInput {
   isMale: boolean;
@@ -35,8 +33,8 @@ export const profileType = new GraphQLObjectType({
     },
     user: {
       type: userType as GraphQLObjectType,
-      resolve: async (source: IProfile, _: DataRecord, context: IContext) =>
-        await getUser({ id: source.userId }, context),
+      resolve: async (source: IProfile, _: DataRecord, { userLoader }: IContext) =>
+        userLoader.load(source.userId),
     },
   }),
 });

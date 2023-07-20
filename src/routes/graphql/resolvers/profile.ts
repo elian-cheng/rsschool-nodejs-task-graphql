@@ -1,6 +1,5 @@
 import { IContext, IID, DataRecord } from '../types/common.js';
 import { IProfileInput } from '../types/profile.js';
-import { MemberTypeId } from '../../member-types/schemas.js';
 
 const getProfile = async ({ id }: IID, { prisma }: IContext) => {
   const profile = await prisma.profile.findUnique({ where: { id } });

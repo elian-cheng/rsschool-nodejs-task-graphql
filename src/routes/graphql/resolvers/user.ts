@@ -31,6 +31,10 @@ const getUsers = async (
     },
   });
 
+  users.forEach((user) => {
+    userLoader.prime(user.id, user);
+  });
+
   return users;
 };
 
